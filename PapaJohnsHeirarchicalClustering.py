@@ -10,7 +10,7 @@ def cleanData(raw, clean):
 
     #reads raw order data from 'raw' csv file
     dataset = pd.read_csv(raw)
-
+        
     #retrieves relevant columns
     dataset = dataset[['store_order_number', 'Out_the_door_timestamp', 'Delivery_run_completed_timestamp', 'Day_part', 'Delivery_latitude', 'Delivery_longitude']]
 
@@ -26,7 +26,7 @@ def cleanData(raw, clean):
     dataset=dataset.drop(drops)
 
     #writes to 'clean' csv file
-    dataset.to_csv(clean)
+    dataset.to_csv(clean, index=False)
 
 #gets clustered deliveries based on given columns
 def getClusters(dataset):
@@ -67,7 +67,6 @@ def printClusters(dataset):
                     #print data for deliveries in current cluster
                     print('Clustered Deliveries:')
                     print(dataset.loc[i:j-1, ['store_order_number', 'Out_the_door_timestamp', 'Delivery_run_completed_timestamp', 'Delivery_latitude', 'Delivery_longitude']].to_string())
-                    print('\n')
 
                     #continue from next delivery not in current cluster
                     i = j
@@ -137,10 +136,11 @@ def plotClusters(dataset):
     #color indicates if delivery is clustered
     c = dataset['Is_cluster']
     cmap = clrs.ListedColormap(['darkblue', 'orange'])
+
+    #size indicates the number of delivieries within cluster scaled up for visual effect
     s = dataset['Num_in_cluster'] * 15
  
     #creates scatter points
-    #scatter = ax.scatter(x, y, z, c=c, cmap=cmap, s=20, edgecolor="k")
     scatter = ax.scatter(x, y, z, c=c, cmap=cmap, s=s, edgecolor="k")
 
     #labels xyz axes
@@ -153,8 +153,16 @@ def plotClusters(dataset):
     ax.zaxis.set_ticks(pd.to_numeric(pd.to_datetime(days)))
     ax.zaxis.set_ticklabels(days)
 
-    #plot legend which indicates color of clustered deliveries
-    plt.legend(*scatter.legend_elements(prop='colors'), title="Is Cluster")
+    #plot legend which indicates if a delivery is clustered using color
+    ax.add_artist(plt.legend(*scatter.legend_elements(prop='colors'), title="Is Cluster", loc='upper right'))
+
+    #plot legend which indicates the number of deliveries in a cluster using size
+    #the way labels come from legend_elements requires them to be parsed before scaling
+    #the labels are scaled back down to represent the number of deliveries instead of their physical size on the plot
+    handles, labels = scatter.legend_elements('sizes')
+    labels = [int(''.join(i for i in x if i.isdigit())) for x in labels]
+    labels = [int(x/15) for x in labels]
+    plt.legend(handles, labels, title="Cluster Size", loc='upper left')
 
 #displays line graph for delivery durations
 def plotDeliveryDuration(dataset):
@@ -231,20 +239,20 @@ def printSummary(dataset):
     #prints the reduction of deliveries from clustering
     print('Clustering reduced', numOrders, 'deliveries to', numRows, 'deliveries.\n')
 
-    #prins count of cluster sizes
+    #prints count of cluster sizes
     for index, values in dataset['Num_in_cluster'].value_counts().iteritems():
         print(values, 'deliveries had', index, 'orders.')
 
-    print('\n')
-
-    #prints max and average drivers needed during each part of the day
+    #prints how many times a certain number of drivers was needed per time of day
     for name, group in dataset.groupby('Day_part'):
-        #print(name, group['Num_rivers'].max())
-        print(name, 'had max drivers of', group['Num_drivers'].max(), 'and average of', group['Num_drivers'].mean())
+        print('\n', name, sep='')
+        for index, values in group['Num_drivers'].value_counts().sort_index().iteritems():
+            print(index, 'drivers were needed', values, 'times.')
 
 #data files names
 raw = 'UK_data_2.csv'
-clean = 'UK_data_2_clean.csv'
+#raw = input('Input name of raw data file. (Include .csv)\n')
+clean = 'Clean_data.csv'
 
 #writes file for clean data
 cleanData(raw, clean)
@@ -293,6 +301,9 @@ plotNumDrivers(dataset)
 
 #prints a summary of conclusions
 printSummary(dataset)
+
+#writes all data to csv
+dataset.to_csv('Conclusions.csv', index=False)
 
 #shows all plots and graphs
 plt.show()
