@@ -124,7 +124,7 @@ def getAggregateClusters(dataset):
 def plotClusters(dataset):
 
     #plot title
-    plt.figure('Delivery Clusters')
+    plt.figure('Delivery Clusters', figsize=(8, 6))
 
     #makes 3D
     ax = plt.axes(projection ="3d")
@@ -134,12 +134,14 @@ def plotClusters(dataset):
     y = dataset['Delivery_longitude']
     z = dataset['Delivery_run_completed_float']
 
-    #color indicates if delivery is clustered 
+    #color indicates if delivery is clustered
     c = dataset['Is_cluster']
     cmap = clrs.ListedColormap(['darkblue', 'orange'])
-
+    s = dataset['Num_in_cluster'] * 15
+ 
     #creates scatter points
-    scatter = ax.scatter(x, y, z, c=c, cmap=cmap, s=20, edgecolor="k")
+    #scatter = ax.scatter(x, y, z, c=c, cmap=cmap, s=20, edgecolor="k")
+    scatter = ax.scatter(x, y, z, c=c, cmap=cmap, s=s, edgecolor="k")
 
     #labels xyz axes
     ax.set_xlabel('Latitude')
@@ -158,7 +160,7 @@ def plotClusters(dataset):
 def plotDeliveryDuration(dataset):
 
     #graph title
-    plt.figure('Delivery Durations')
+    plt.figure('Delivery Durations', figsize=(8, 6))
 
     ax = plt.axes()
 
@@ -206,7 +208,7 @@ def getNumDrivers(dataset):
 def plotNumDrivers(dataset):
 
     #graph title
-    plt.figure('Optimal Number of Drivers')
+    plt.figure('Optimal Number of Drivers', figsize=(8, 6))
 
     ax = plt.axes()
 
@@ -281,12 +283,12 @@ dataset = getAggregateClusters(dataset)
 #sorts data in order of 'out the door' time
 dataset = dataset.sort_values('Out_the_door_float').reset_index(drop=True)
 
-#plots deliveries and their durations
+#gets the number of drivers required
+dataset['Num_drivers'] = getNumDrivers(dataset)
+
+#plots deliveries, delivery durations, and number of drivers
 plotClusters(dataset)
 plotDeliveryDuration(dataset)
-
-#gets the number of drivers required and graphs it
-dataset['Num_drivers'] = getNumDrivers(dataset)
 plotNumDrivers(dataset)
 
 #prints a summary of conclusions
