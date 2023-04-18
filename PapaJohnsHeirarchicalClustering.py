@@ -123,7 +123,7 @@ def getAggregateClusters(dataset):
 def plotClusters(dataset):
 
     #plot title
-    plt.figure('Delivery Clusters', figsize=(8, 6))
+    plt.figure('Delivery Clusters', figsize=(10, 8))
 
     #makes 3D
     ax = plt.axes(projection ="3d")
@@ -138,7 +138,7 @@ def plotClusters(dataset):
     cmap = clrs.ListedColormap(['darkblue', 'orange'])
 
     #size indicates the number of delivieries within cluster scaled up for visual effect
-    s = dataset['Num_in_cluster'] * 15
+    s = dataset['Num_in_cluster'] * 25
  
     #creates scatter points
     scatter = ax.scatter(x, y, z, c=c, cmap=cmap, s=s, edgecolor="k")
@@ -161,7 +161,7 @@ def plotClusters(dataset):
     #the labels are scaled back down to represent the number of deliveries instead of their physical size on the plot
     handles, labels = scatter.legend_elements('sizes')
     labels = [int(''.join(i for i in x if i.isdigit())) for x in labels]
-    labels = [int(x/15) for x in labels]
+    labels = [int(x/25) for x in labels]
     plt.legend(handles, labels, title="Cluster Size", loc='upper left')
 
 #displays line graph for delivery durations
